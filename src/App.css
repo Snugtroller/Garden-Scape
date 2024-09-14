@@ -1,0 +1,39 @@
+.App {
+    /* height: 100vh; Full height of viewport */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+  }
+  
+  .heading-container{
+    height: 25vh;
+    position: absolute;
+  }
+  .garden-heading {
+    font-size: 28px;
+    text-align: center;
+  }
+  .canvas-container {
+    position: absolute; /* Position the container absolutely */
+    bottom: 0;          /* Stick it to the bottom of the window */
+    left: 0;            /* Align it to the left */
+    width: 100%;        /* Full width */
+    height: 100vh;       /* Half the height of the viewport */
+    border: 2px solid #ccc;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
