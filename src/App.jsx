@@ -1,15 +1,19 @@
 import "./App.css";
 import Main from "./Components/Main";
-import GardenHeading from "./Components/GardenHeading";
+import Info from "./Components/Info";
 
 function App() {
   return (
     <div className="App">
       <div className="heading-container">
-        <GardenHeading className="garden-heading" />
       </div>
       <div className="main-content">
-        <Main />
+        {/* Wrapper for Info and Main */}
+        <div className="model-container relative">
+        <Info className="info-cont" />
+          <Main />
+           {/* Ensuring Info is on top */}
+        </div>
       </div>
     </div>
   );

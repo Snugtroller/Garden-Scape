@@ -1,7 +1,9 @@
-import  { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import sunset from "../assets/sunset.png";
+import * as TWEEN from "@tweenjs/tween.js"; // Correctly import TWEEN
 
 const Main = () => {
   const mountRef = useRef(null); // Ref for the DOM element
@@ -61,16 +63,38 @@ const Main = () => {
     spotLight.shadow.bias = -0.0001;
     scene.add(spotLight);
 
+    // Load and apply the texture to the sphere
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load(sunset);
+
+    // Set the texture wrapping to repeat
+    texture.wrapS = THREE.RepeatWrapping; // Repeat horizontally
+    texture.wrapT = THREE.ClampToEdgeWrapping; // Clamp vertically to avoid stretching
+
+    // Offset the texture a little to prevent the seam from being in view
+    texture.offset.x = 0.5; // Adjust this value to shift the seam
+
+    // Create a large sphere with the texture
+    const sphereGeometry = new THREE.SphereGeometry(100, 100, 100);
+    const sphereMaterial = new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.BackSide, // Render the inside of the sphere
+    });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(sphere);
+
     // Load the GLTF model
-    const loader = new GLTFLoader().setPath("/Garden/");
-    loader.load("scene.glb", (gltf) => {
+    const gltfLoader = new GLTFLoader().setPath("/Garden/");
+    gltfLoader.load("scene.glb", (gltf) => {
       console.log("loading model");
       const mesh = gltf.scene;
 
+      // Set a custom property on the garden model to mark it as interactable
       mesh.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          child.isInteractable = true; // Mark the mesh as interactable
         }
       });
 
@@ -97,21 +121,60 @@ const Main = () => {
     window.addEventListener("resize", handleResize);
 
     const raycaster = new THREE.Raycaster();
-    document.addEventListener("mousedown", onMouseDown);
-    function onMouseDown(event) {
-      const coords = new THREE.Vector2(
-        (event.clientX / renderer.domElement.clientWidth) * 2 - 1,
-        -((event.clientY / renderer.domElement.clientHeight) * 2 - 1)
-      );
+    const mouse = new THREE.Vector2();
 
-      raycaster.setFromCamera(coords, camera);
+    // Add click listener to zoom on objects
+    const onMouseClick = (event) => {
+      mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
 
-      const intersections = raycaster.intersectObjects(scene.children, true);
-      if (intersections.length > 0) {
-        const selectedObject = intersections[0].object;
-        console.log(`${selectedObject.name} was clicked!`);
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      if (intersects.length > 0) {
+        const selectedObject = intersects[0].object;
+
+        // Only allow interaction with objects that have the `isInteractable` property
+        if (selectedObject.isInteractable) {
+          console.log(`${selectedObject.name} was clicked!`);
+          zoomToObject(selectedObject);
+        }
       }
-    }
+    };
+
+    window.addEventListener("click", onMouseClick);
+
+    // Zoom function
+    const zoomToObject = (object) => {
+      if (!camera || !controls) return;
+
+      const boundingBox = new THREE.Box3().setFromObject(object);
+      const center = boundingBox.getCenter(new THREE.Vector3());
+      const size = boundingBox.getSize(new THREE.Vector3());
+
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
+      let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+
+      cameraZ *= 1.5; // Zoom out a little so object fits in view
+
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+
+      const newPosition = center.clone().add(direction.multiplyScalar(cameraZ));
+
+      // Animate camera position
+      new TWEEN.Tween(camera.position)
+        .to(newPosition, 1000)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .start();
+
+      // Animate controls target
+      new TWEEN.Tween(controls.target)
+        .to(center, 1000)
+        .easing(TWEEN.Easing.Cubic.Out)
+        .start();
+    };
 
     // Animation loop
     const animate = () => {
@@ -124,6 +187,7 @@ const Main = () => {
 
       controls.update();
       renderer.render(scene, camera);
+      TWEEN.update(); // Update TWEEN animations
     };
 
     animate();
@@ -131,6 +195,7 @@ const Main = () => {
     // Cleanup function to remove listeners and clean up Three.js scene
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("click", onMouseClick);
       mountRef.current.removeChild(renderer.domElement);
       controls.dispose();
     };

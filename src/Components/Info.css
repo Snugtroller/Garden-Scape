@@ -1,0 +1,93 @@
+/* Container for the entire sidebar component */
+.sidebar-container {
+  position: relative;
+
+  background-color: #bfdbfe; /* Light blue background */
+}
+
+/* Button to toggle the sidebar */
+.sidebar-toggle-btn {
+  position: absolute;
+  margin-top: 20px;
+  margin-left: 50px;
+  padding: 0.5rem;
+  border-radius: 9999px; /* Full rounded */
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Light shadow */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: #b3b4b6; /* Hover state light gray */
+  cursor: pointer;
+}
+
+/* Icon size for the toggle button */
+.sidebar-toggle-icon {
+  width: 2.5rem;
+  height: 2rem;
+  color: #4b5563; /* Gray color for the icon */
+}
+
+/* Sidebar container */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 20rem; /* 80px width */
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Slight shadow */
+  transition: transform 0.3s ease-in-out;
+  z-index: 50;
+}
+
+/* Slide-in animation when the sidebar is opened */
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* Slide-out animation when the sidebar is closed */
+.sidebar.closed {
+  transform: translateX(-100%);
+}
+
+/* Sidebar content */
+.sidebar-content {
+  padding: 1.5rem;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sidebar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.sidebar-close-btn {
+  padding: 0.25rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar-close-btn:hover {
+  background-color: #e5e7eb; /* Light gray background on hover */
+  cursor: pointer;
+}
+
+/* Close icon size */
+.sidebar-close-icon {
+  width: 2rem;
+  height: 1.5rem;
+  color: #4b5563;
+}
+
+/* Sidebar text content */
+.sidebar-text {
+  color: #4b5563;
+}
